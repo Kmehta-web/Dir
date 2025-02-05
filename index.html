@@ -73,7 +73,7 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         let user = null;
 
@@ -85,7 +85,10 @@
                     user = result.user;
                     updateUI(true);
                 })
-                .catch(error => console.error("Login Failed", error));
+                .catch(error => {
+                    console.error("Login Failed", error);
+                    alert("Google Sign-In failed. Please try again.");
+                });
         }
 
         // Sign Out
