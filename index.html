@@ -56,8 +56,8 @@
     </tbody>
   </table>
 
-  <!-- JWT library -->
-  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  <!-- jsrsasign library -->
+  <script src="https://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
 
   <script type="module">
     // Import Firebase functions (modular)
@@ -125,12 +125,20 @@
       document.getElementById("input-text").value = ""; // Clear input
     });
 
-    // Verify JWT
+    // Verify JWT using jsrsasign
     async function verifyJWT(token) {
+      const publicKey = `-----BEGIN PUBLIC KEY-----
+      MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
+      arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
+      -----END PUBLIC KEY-----`;
+
       try {
-        const decoded = jwt_decode(token); // Decode the JWT
-        console.log("Decoded JWT:", decoded);
-        return true; // Assume JWT is valid (for demonstration purposes)
+        // Verify the JWT using jsrsasign
+        const isValid = KJUR.jws.JWS.verifyJWT(token, publicKey, {
+          alg: ["ES256"], // Algorithm used for signing
+        });
+
+        return isValid; // Return true if JWT is valid
       } catch (error) {
         console.error("JWT verification failed:", error);
         return false; // JWT is invalid
