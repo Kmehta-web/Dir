@@ -28,6 +28,9 @@
             background-color: red;
             color: white;
         }
+        #submissionSection {
+            display: none; /* Hidden until user logs in */
+        }
     </style>
 </head>
 <body>
@@ -35,36 +38,38 @@
     <h1>Secure Text Submission</h1>
 
     <!-- Google Sign-In Button -->
-    <button onclick="googleLogin()">Login with Google</button>
-    <button onclick="signOut()">Sign Out</button>
+    <button id="loginBtn" onclick="googleLogin()">Login with Google</button>
+    <button id="logoutBtn" onclick="signOut()" style="display:none;">Sign Out</button>
     <p id="user-info"></p>
 
-    <form id="submissionForm">
-        <input type="text" id="textInput" placeholder="Enter your text" required>
-        <button type="submit">Submit</button>
-    </form>
+    <!-- Submission Section (Hidden initially) -->
+    <div id="submissionSection">
+        <form id="submissionForm">
+            <input type="text" id="textInput" placeholder="Enter your text" required>
+            <button type="submit">Submit</button>
+        </form>
 
-    <table id="submissionTable">
-        <thead>
-            <tr>
-                <th>Text</th>
-                <th>Date/Time</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+        <table id="submissionTable">
+            <thead>
+                <tr>
+                    <th>Text</th>
+                    <th>Date/Time</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <script>
-        // Firebase Configuration (Replace with your Firebase credentials)
+        // Firebase Configuration
         const firebaseConfig = {
-           apiKey: "AIzaSyDutDyTo8sbmI8ftpIp3K5DtkgmV5uJYPw",
-   authDomain: "grcs-69b66.firebaseapp.com",
-   projectId: "grcs-69b66",
-   storageBucket: "grcs-69b66.firebasestorage.app",
-   messagingSenderId: "621698190294",
-   appId: "1:621698190294:web:a4e08432305b59ae75b277",
-   measurementId: "G-NQ91XL5NMJ"
-
+            apiKey: "AIzaSyDutDyTo8sbmI8ftpIp3K5DtkgmV5uJYPw",
+            authDomain: "grcs-69b66.firebaseapp.com",
+            projectId: "grcs-69b66",
+            storageBucket: "grcs-69b66.appspot.com",
+            messagingSenderId: "621698190294",
+            appId: "1:621698190294:web:a4e08432305b59ae75b277",
+            measurementId: "G-NQ91XL5NMJ"
         };
 
         // Initialize Firebase
@@ -72,23 +77,45 @@
         const auth = firebase.auth();
         let user = null;
 
-        // Google Sign-In (No need for Client ID manually)
+        // Google Sign-In
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider)
                 .then(result => {
                     user = result.user;
-                    document.getElementById("user-info").innerText = `Logged in as: ${user.displayName}`;
+                    updateUI(true);
                 })
                 .catch(error => console.error("Login Failed", error));
         }
 
+        // Sign Out
         function signOut() {
             auth.signOut().then(() => {
                 user = null;
-                document.getElementById("user-info").innerText = "Logged out";
+                updateUI(false);
             });
         }
+
+        // Update UI Based on Auth State
+        function updateUI(isLoggedIn) {
+            if (isLoggedIn) {
+                document.getElementById("user-info").innerText = `Logged in as: ${user.displayName}`;
+                document.getElementById("loginBtn").style.display = "none";
+                document.getElementById("logoutBtn").style.display = "block";
+                document.getElementById("submissionSection").style.display = "block";
+            } else {
+                document.getElementById("user-info").innerText = "";
+                document.getElementById("loginBtn").style.display = "block";
+                document.getElementById("logoutBtn").style.display = "none";
+                document.getElementById("submissionSection").style.display = "none";
+            }
+        }
+
+        // Listen for Auth State Changes
+        auth.onAuthStateChanged((currentUser) => {
+            user = currentUser;
+            updateUI(!!user);
+        });
 
         // Form Submission
         document.getElementById('submissionForm').addEventListener('submit', function(event) {
