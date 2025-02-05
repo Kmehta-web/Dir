@@ -95,7 +95,7 @@
           // User signed in successfully
           document.getElementById("login-section").style.display = "none";
           document.getElementById("submission-section").style.display = "block";
-          document.getElementById("signout-section").style.display = "block";
+          document.getElementById("signout-section").style.display = "block"; // Show Sign Out button
         }
       })
       .catch((error) => {
@@ -112,7 +112,9 @@
 
       const tableBody = document.querySelector("#submission-table tbody");
       const newRow = document.createElement("tr");
-      if (isJWT) newRow.classList.add("highlight");
+      if (isJWT) {
+        newRow.classList.add("highlight"); // Apply the highlight class for valid JWTs
+      }
 
       newRow.innerHTML = `
         <td>${inputText}</td>
