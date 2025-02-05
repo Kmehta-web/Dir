@@ -128,11 +128,6 @@
     // Verify JWT
     async function verifyJWT(token) {
       try {
-        if (!token) {
-          console.error("No token provided!");
-          return false;
-        }
-        console.log("JWT Token:", token); // Log the token for debugging
         const decoded = jwt_decode(token); // Decode the JWT
         console.log("Decoded JWT:", decoded);
         return true; // Assume JWT is valid (for demonstration purposes)
