@@ -26,6 +26,10 @@
       background-color: red;
       color: white;
     }
+    #signout-section {
+      display: none;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -36,6 +40,9 @@
   <div id="submission-section" style="display: none;">
     <input type="text" id="input-text" placeholder="Enter text or JWT token">
     <button id="submit-button">Submit</button>
+  </div>
+  <div id="signout-section">
+    <button id="signout-button">Sign Out</button>
   </div>
   <table id="submission-table">
     <thead>
@@ -60,6 +67,7 @@
       GoogleAuthProvider,
       signInWithRedirect,
       getRedirectResult,
+      signOut,
     } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
     // Firebase configuration
@@ -87,6 +95,7 @@
           // User signed in successfully
           document.getElementById("login-section").style.display = "none";
           document.getElementById("submission-section").style.display = "block";
+          document.getElementById("signout-section").style.display = "block";
         }
       })
       .catch((error) => {
@@ -131,6 +140,21 @@
         return false; // JWT is invalid
       }
     }
+
+    // Sign Out
+    document.getElementById("signout-button").addEventListener("click", () => {
+      signOut(auth)
+        .then(() => {
+          // Sign-out successful
+          document.getElementById("login-section").style.display = "block";
+          document.getElementById("submission-section").style.display = "none";
+          document.getElementById("signout-section").style.display = "none";
+          alert("You have been signed out.");
+        })
+        .catch((error) => {
+          console.error("Sign out failed:", error);
+        });
+    });
   </script>
 </body>
 </html>
