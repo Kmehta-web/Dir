@@ -34,16 +34,20 @@
 </head>
 <body>
   <h1>Text Submission</h1>
+  
   <div id="login-section">
     <button id="google-login">Login using Google</button>
   </div>
+  
   <div id="submission-section" style="display: none;">
     <input type="text" id="input-text" placeholder="Enter text or JWT token">
     <button id="submit-button">Submit</button>
   </div>
+  
   <div id="signout-section">
     <button id="signout-button">Sign Out</button>
   </div>
+  
   <table id="submission-table">
     <thead>
       <tr>
@@ -56,18 +60,19 @@
     </tbody>
   </table>
 
-  <!-- jsrsasign library -->
+  <!-- Import jsrsasign for JWT verification -->
   <script src="https://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
 
+  <!-- Firebase Setup -->
   <script type="module">
-    // Import Firebase functions (modular)
+    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
     import {
       getAuth,
       GoogleAuthProvider,
-      signInWithRedirect,
-      getRedirectResult,
+      signInWithPopup,
       signOut,
+      onAuthStateChanged,
     } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
     // Firebase configuration
@@ -75,7 +80,7 @@
       apiKey: "AIzaSyBlWdCFByJdKsT4IvE6zeHwkmxtJSr185w",
       authDomain: "dira-d8176.firebaseapp.com",
       projectId: "dira-d8176",
-      storageBucket: "dira-d8176.firebasestorage.app",
+      storageBucket: "dira-d8176.appspot.com",
       messagingSenderId: "822626171617",
       appId: "1:822626171617:web:42d099325181cc051b55a0",
       measurementId: "G-5GG1KR03EH",
@@ -84,29 +89,34 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
-    // Debugging: Log Firebase initialization
-    console.log("Firebase initialized:", app);
-
-    // Handle Google Login with Redirect
-    document.getElementById("google-login").addEventListener("click", () => {
-      const provider = new GoogleAuthProvider();
-      signInWithRedirect(auth, provider);
+    // Listen for auth state changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("submission-section").style.display = "block";
+        document.getElementById("signout-section").style.display = "block";
+      } else {
+        document.getElementById("login-section").style.display = "block";
+        document.getElementById("submission-section").style.display = "none";
+        document.getElementById("signout-section").style.display = "none";
+      }
     });
 
-    // Handle Redirect Result
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // User signed in successfully
-          document.getElementById("login-section").style.display = "none";
-          document.getElementById("submission-section").style.display = "block";
-          document.getElementById("signout-section").style.display = "block";
-        }
-      })
-      .catch((error) => {
-        console.error("Google login failed:", error);
-      });
+    // Google Login
+    document.getElementById("google-login").addEventListener("click", () => {
+      signInWithPopup(auth, provider)
+        .then(() => console.log("User signed in"))
+        .catch((error) => console.error("Google login failed:", error));
+    });
+
+    // Sign Out
+    document.getElementById("signout-button").addEventListener("click", () => {
+      signOut(auth)
+        .then(() => alert("Signed out successfully."))
+        .catch((error) => console.error("Sign out failed:", error));
+    });
 
     // Submit text
     document.getElementById("submit-button").addEventListener("click", async () => {
@@ -118,9 +128,7 @@
 
       const tableBody = document.querySelector("#submission-table tbody");
       const newRow = document.createElement("tr");
-      if (isJWT) {
-        newRow.classList.add("highlight"); // Apply the highlight class for valid JWTs
-      }
+      if (isJWT) newRow.classList.add("highlight");
 
       newRow.innerHTML = `
         <td>${inputText}</td>
@@ -139,32 +147,16 @@
       -----END PUBLIC KEY-----`;
 
       try {
-        // Verify the JWT using jsrsasign
         const isValid = KJUR.jws.JWS.verifyJWT(token, publicKey, {
-          alg: ["ES256"], // Algorithm used for signing
+          alg: ["ES256"],
         });
 
-        return isValid; // Return true if JWT is valid
+        return isValid;
       } catch (error) {
         console.error("JWT verification failed:", error);
-        return false; // JWT is invalid
+        return false;
       }
     }
-
-    // Sign Out
-    document.getElementById("signout-button").addEventListener("click", () => {
-      signOut(auth)
-        .then(() => {
-          // Sign-out successful
-          document.getElementById("login-section").style.display = "block";
-          document.getElementById("submission-section").style.display = "none";
-          document.getElementById("signout-section").style.display = "none";
-          alert("You have been signed out.");
-        })
-        .catch((error) => {
-          console.error("Sign out failed:", error);
-        });
-    });
   </script>
 </body>
 </html>
