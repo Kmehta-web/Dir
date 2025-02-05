@@ -75,12 +75,18 @@
       apiKey: "AIzaSyDutDyTo8sbmI8ftpIp3K5DtkgmV5uJYPw",
       authDomain: "grcs-69b66.firebaseapp.com",
       projectId: "grcs-69b66",
+      storageBucket: "grcs-69b66.firebasestorage.app",
+      messagingSenderId: "621698190294",
       appId: "1:621698190294:web:a4e08432305b59ae75b277",
+      measurementId: "G-NQ91XL5NMJ",
     };
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+
+    // Debugging: Log Firebase initialization
+    console.log("Firebase initialized:", app);
 
     // Handle Google Login with Redirect
     document.getElementById("google-login").addEventListener("click", () => {
