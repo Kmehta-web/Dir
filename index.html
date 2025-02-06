@@ -3,79 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Submission with Google Login</title>
+  <title>JWT Text Submission</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    .highlight {
-      background-color: red;
-      color: white;
-    }
-    #signout-section {
-      display: none;
-      margin-top: 20px;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .highlight { background-color: red; color: white; }
+    #signout-section { display: none; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h1>Text Submission</h1>
-  
+  <h1>JWT Text Submission</h1>
   <div id="login-section">
-    <button id="google-login">Login using Google</button>
+    <button id="google-login">Login with Google</button>
   </div>
-  
   <div id="submission-section" style="display: none;">
     <input type="text" id="input-text" placeholder="Enter text or JWT token">
     <button id="submit-button">Submit</button>
   </div>
-  
   <div id="signout-section">
     <button id="signout-button">Sign Out</button>
   </div>
-  
   <table id="submission-table">
-    <thead>
-      <tr>
-        <th>Text</th>
-        <th>Date & Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Rows will be added dynamically -->
-    </tbody>
+    <thead><tr><th>Text</th><th>Date & Time</th></tr></thead>
+    <tbody></tbody>
   </table>
 
-  <!-- Import jsrsasign for JWT verification -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
   <script src="https://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
 
-  <!-- Firebase Setup -->
-  <script type="module">
-    // Import Firebase modules
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged,
-    } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-
-    // Firebase configuration
+  <script>
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBlWdCFByJdKsT4IvE6zeHwkmxtJSr185w",
       authDomain: "dira-d8176.firebaseapp.com",
@@ -83,79 +43,48 @@
       storageBucket: "dira-d8176.appspot.com",
       messagingSenderId: "822626171617",
       appId: "1:822626171617:web:42d099325181cc051b55a0",
-      measurementId: "G-5GG1KR03EH",
+      measurementId: "G-5GG1KR03EH"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-    // Listen for auth state changes
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
+    document.getElementById("google-login").addEventListener("click", () => {
+      auth.signInWithPopup(provider).then(() => {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("submission-section").style.display = "block";
         document.getElementById("signout-section").style.display = "block";
-      } else {
+      }).catch(error => console.error("Google login failed:", error));
+    });
+
+    document.getElementById("signout-button").addEventListener("click", () => {
+      auth.signOut().then(() => {
         document.getElementById("login-section").style.display = "block";
         document.getElementById("submission-section").style.display = "none";
         document.getElementById("signout-section").style.display = "none";
-      }
+      });
     });
 
-    // Google Login
-    document.getElementById("google-login").addEventListener("click", () => {
-      signInWithPopup(auth, provider)
-        .then(() => console.log("User signed in"))
-        .catch((error) => console.error("Google login failed:", error));
-    });
-
-    // Sign Out
-    document.getElementById("signout-button").addEventListener("click", () => {
-      signOut(auth)
-        .then(() => alert("Signed out successfully."))
-        .catch((error) => console.error("Sign out failed:", error));
-    });
-
-    // Submit text
     document.getElementById("submit-button").addEventListener("click", async () => {
       const inputText = document.getElementById("input-text").value.trim();
       if (!inputText) return;
-
       const dateTime = new Date().toLocaleString();
       const isJWT = await verifyJWT(inputText);
-
-      const tableBody = document.querySelector("#submission-table tbody");
       const newRow = document.createElement("tr");
       if (isJWT) newRow.classList.add("highlight");
-
-      newRow.innerHTML = `
-        <td>${inputText}</td>
-        <td>${dateTime}</td>
-      `;
-      tableBody.appendChild(newRow);
-
-      document.getElementById("input-text").value = ""; // Clear input
+      newRow.innerHTML = `<td>${inputText}</td><td>${dateTime}</td>`;
+      document.querySelector("#submission-table tbody").appendChild(newRow);
+      document.getElementById("input-text").value = "";
     });
 
-    // Verify JWT using jsrsasign
     async function verifyJWT(token) {
       const publicKey = `-----BEGIN PUBLIC KEY-----
       MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
       arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
       -----END PUBLIC KEY-----`;
-
-      try {
-        const isValid = KJUR.jws.JWS.verifyJWT(token, publicKey, {
-          alg: ["ES256"],
-        });
-
-        return isValid;
-      } catch (error) {
-        console.error("JWT verification failed:", error);
-        return false;
-      }
+      try { return KJUR.jws.JWS.verifyJWT(token, publicKey, { alg: ["ES256"] }); }
+      catch (error) { console.error("JWT verification failed:", error); return false; }
     }
   </script>
 </body>
