@@ -34,8 +34,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
   <script src="https://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
 
-  <script>
-    // Firebase Configuration
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBlWdCFByJdKsT4IvE6zeHwkmxtJSr185w",
       authDomain: "dira-d8176.firebaseapp.com",
@@ -46,12 +48,12 @@
       measurementId: "G-5GG1KR03EH"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
     document.getElementById("google-login").addEventListener("click", () => {
-      auth.signInWithPopup(provider).then(() => {
+      signInWithPopup(auth, provider).then(() => {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("submission-section").style.display = "block";
         document.getElementById("signout-section").style.display = "block";
@@ -59,7 +61,7 @@
     });
 
     document.getElementById("signout-button").addEventListener("click", () => {
-      auth.signOut().then(() => {
+      signOut(auth).then(() => {
         document.getElementById("login-section").style.display = "block";
         document.getElementById("submission-section").style.display = "none";
         document.getElementById("signout-section").style.display = "none";
@@ -73,16 +75,16 @@
       const isJWT = await verifyJWT(inputText);
       const newRow = document.createElement("tr");
       if (isJWT) newRow.classList.add("highlight");
-      newRow.innerHTML = <td>${inputText}</td><td>${dateTime}</td>;
+      newRow.innerHTML = `<td>${inputText}</td><td>${dateTime}</td>`;
       document.querySelector("#submission-table tbody").appendChild(newRow);
       document.getElementById("input-text").value = "";
     });
 
     async function verifyJWT(token) {
-      const publicKey = -----BEGIN PUBLIC KEY-----
+      const publicKey = `-----BEGIN PUBLIC KEY-----
       MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
       arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
-      -----END PUBLIC KEY-----;
+      -----END PUBLIC KEY-----`;
       try { return KJUR.jws.JWS.verifyJWT(token, publicKey, { alg: ["ES256"] }); }
       catch (error) { console.error("JWT verification failed:", error); return false; }
     }
