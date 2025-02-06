@@ -50,8 +50,31 @@
     const auth = firebase.auth();
     const provider = new firebase.auth.GoogleAuthProvider();
 
+    // Check sessionStorage availability
+    function checkSessionStorage() {
+      try {
+        sessionStorage.setItem('test', '123');
+        sessionStorage.removeItem('test');
+        return true;
+      } catch (error) {
+        console.warn("SessionStorage is not available. Sign-in may fail.");
+        return false;
+      }
+    }
+
+    // Set persistence to LOCAL (ensures session is remembered across page reloads)
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .then(() => console.log("Auth persistence set to LOCAL"))
+      .catch((error) => console.error("Error setting persistence:", error));
+
     document.getElementById("google-login").addEventListener("click", () => {
-      auth.signInWithPopup(provider).then(() => {
+      if (!checkSessionStorage()) {
+        alert("Session storage is unavailable. Disable private browsing or enable storage.");
+        return;
+      }
+
+      // Use signInWithPopup instead of signInWithRedirect to avoid sessionStorage issues
+      auth.signInWithPopup(provider).then((result) => {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("submission-section").style.display = "block";
         document.getElementById("signout-section").style.display = "block";
