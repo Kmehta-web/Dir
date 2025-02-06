@@ -30,11 +30,12 @@
     <tbody></tbody>
   </table>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-  <script src="https://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
+  <!-- Import Firebase SDK as ES modules -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    import * as KJUR from "https://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js";
 
-  <script>
     // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBlWdCFByJdKsT4IvE6zeHwkmxtJSr185w",
@@ -46,9 +47,10 @@
       measurementId: "G-5GG1KR03EH"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
     // Check sessionStorage availability
     function checkSessionStorage() {
@@ -74,7 +76,7 @@
       }
 
       // Use signInWithPopup instead of signInWithRedirect to avoid sessionStorage issues
-      auth.signInWithPopup(provider).then((result) => {
+      signInWithPopup(auth, provider).then((result) => {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("submission-section").style.display = "block";
         document.getElementById("signout-section").style.display = "block";
@@ -82,7 +84,7 @@
     });
 
     document.getElementById("signout-button").addEventListener("click", () => {
-      auth.signOut().then(() => {
+      signOut(auth).then(() => {
         document.getElementById("login-section").style.display = "block";
         document.getElementById("submission-section").style.display = "none";
         document.getElementById("signout-section").style.display = "none";
